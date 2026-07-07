@@ -1,0 +1,80 @@
+"""slumcli entry point."""
+
+import sys
+
+from dotenv import load_dotenv
+
+from slumcli.client import chat_with_tools
+from slumcli.tools import TOOLS, run_tool
+from slumcli.context import trim_messages
+from slumcli.prompts import SYSTEM_PROMPT
+from slumcli.security import confirm_tool, audit_log
+
+
+def vlog(verbose: bool, msg: str) -> None:
+    if verbose:
+        print(msg, file=sys.stderr)
+
+
+def parse_args(argv: list[str]):
+    return "-v" in argv
+
+def main() -> None:
+    """Run the minimal agent: read input → call API → print reply."""
+    load_dotenv()
+    verbose = parse_args(sys.argv[1:])
+
+    messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+    while True:
+        user_input = input("You: ")
+        if user_input == "exit":
+            break
+        
+        messages.append({"role": "user", "content": user_input})
+        trim_messages(messages)
+        reply = run_turn(messages, verbose)
+        print(reply)
+
+def run_turn(messages, verbose):
+    reply = chat_with_tools(messages, TOOLS)
+    if reply.tool_calls:
+        names = [tc.function.name for tc in reply.tool_calls]
+        vlog(verbose, f"[verbose] tool_calls: {names}")
+    else:
+        vlog(verbose, "[verbose] direct reply (no tools)")
+
+    turn = 0
+    while reply.tool_calls and turn < 10:
+        turn += 1
+        messages.append(reply.model_dump())
+        for tool_call in reply.tool_calls:
+            name = tool_call.function.name
+            args = tool_call.function.arguments
+            vlog(verbose, f"[verbose] turn {turn}: {name}({args})")
+            if confirm_tool(name, args):
+                result = run_tool(name, args)
+                if "blocked" in result.lower():
+                    outcome = "blocked"
+                elif result.startswith("Error:"):
+                    outcome = "error"
+                else:
+                    outcome = "executed"
+            else:
+                result = "Tool execution cancelled by user"
+                outcome = "denied"
+            audit_log(name, args, outcome)
+            preview = result[:200] + ("..." if len(result) > 200 else "")
+            vlog(verbose, f"[verbose] result: {preview}")
+            messages.append({"role": "tool", "content": result, "tool_call_id": tool_call.id})
+        reply = chat_with_tools(messages, TOOLS)
+        if reply.tool_calls:
+            names = [tc.function.name for tc in reply.tool_calls]
+            vlog(verbose, f"[verbose] tool_calls: {names}")
+
+    vlog(verbose, f"[verbose] done, {turn} tool turn(s)")
+    messages.append({"role": "assistant", "content": reply.content})
+    return reply.content
+
+
+if __name__ == "__main__":
+    main()
