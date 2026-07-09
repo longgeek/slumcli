@@ -9,6 +9,7 @@ from slumcli.tools import TOOLS, run_tool
 from slumcli.context import trim_messages
 from slumcli.prompts import SYSTEM_PROMPT
 from slumcli.security import confirm_tool, audit_log
+from slumcli.tracing import start_trace, finish_trace, add_span, end_span, print_trace
 
 
 def vlog(verbose: bool, msg: str) -> None:
@@ -30,12 +31,15 @@ def main() -> None:
         if user_input == "exit":
             break
         
+        trace = start_trace(user_input)
         messages.append({"role": "user", "content": user_input})
         trim_messages(messages)
-        reply = run_turn(messages, verbose)
+        reply = run_turn(messages, verbose, trace)
         print(reply)
+        finish_trace(trace)
+        print_trace(trace)
 
-def run_turn(messages, verbose):
+def run_turn(messages, verbose, trace):
     reply = chat_with_tools(messages, TOOLS)
     if reply.tool_calls:
         names = [tc.function.name for tc in reply.tool_calls]
@@ -51,6 +55,7 @@ def run_turn(messages, verbose):
             name = tool_call.function.name
             args = tool_call.function.arguments
             vlog(verbose, f"[verbose] turn {turn}: {name}({args})")
+            span = add_span(trace, "tool_call", name, args)
             if confirm_tool(name, args):
                 result = run_tool(name, args)
                 if "blocked" in result.lower():
@@ -66,6 +71,7 @@ def run_turn(messages, verbose):
             preview = result[:200] + ("..." if len(result) > 200 else "")
             vlog(verbose, f"[verbose] result: {preview}")
             messages.append({"role": "tool", "content": result, "tool_call_id": tool_call.id})
+            end_span(span, result)
         reply = chat_with_tools(messages, TOOLS)
         if reply.tool_calls:
             names = [tc.function.name for tc in reply.tool_calls]
