@@ -33,8 +33,14 @@ def main() -> None:
             print(f"bye")
             break
 
-        if user_input == "exit":
+        if user_input in ["exit", "/q"]:
             break
+        elif user_input == "/n":
+            messages = [{"role": "system", "content": SYSTEM_PROMPT}]
+            continue
+        elif user_input == "/h":
+            print("Usage: /q to exit, /n to new task, /h to show help")
+            continue
         
         trace = start_trace(user_input)
         messages.append({"role": "user", "content": user_input})
