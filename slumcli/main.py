@@ -91,6 +91,8 @@ def run_turn(messages, verbose, trace):
         if reply.tool_calls:
             names = [tc.function.name for tc in reply.tool_calls]
             vlog(verbose, f"[verbose] tool_calls: {names}")
+            if turn == 10:
+                return "⚠️ 任务未在 10 轮内完成,已停止。"
 
     vlog(verbose, f"[verbose] done, {turn} tool turn(s)")
     messages.append({"role": "assistant", "content": reply.content})
