@@ -40,7 +40,10 @@ def main() -> None:
         print_trace(trace)
 
 def run_turn(messages, verbose, trace):
-    reply = chat_with_tools(messages, TOOLS)
+    span = add_span(trace, "llm", "llm", f"{len(messages)} messages")
+    reply, usage = chat_with_tools(messages, TOOLS)
+    span.metadata["total_tokens"] = usage.total_tokens
+    end_span(span, reply.content)
     if reply.tool_calls:
         names = [tc.function.name for tc in reply.tool_calls]
         vlog(verbose, f"[verbose] tool_calls: {names}")
@@ -72,7 +75,10 @@ def run_turn(messages, verbose, trace):
             vlog(verbose, f"[verbose] result: {preview}")
             messages.append({"role": "tool", "content": result, "tool_call_id": tool_call.id})
             end_span(span, result)
-        reply = chat_with_tools(messages, TOOLS)
+        span = add_span(trace, "llm", "llm", f"{len(messages)} messages")
+        reply, usage = chat_with_tools(messages, TOOLS)
+        span.metadata["total_tokens"] = usage.total_tokens
+        end_span(span, reply.content)
         if reply.tool_calls:
             names = [tc.function.name for tc in reply.tool_calls]
             vlog(verbose, f"[verbose] tool_calls: {names}")

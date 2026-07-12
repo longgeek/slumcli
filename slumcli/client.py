@@ -35,4 +35,4 @@ def chat(messages: list[dict[str, str]]) -> str:
 def chat_with_tools(messages, tools):
     client = get_client()
     resp = client.chat.completions.create(model="deepseek-chat", messages=messages, tools=tools)
-    return resp.choices[0].message
+    return (resp.choices[0].message, resp.usage)
