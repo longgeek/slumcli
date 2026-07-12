@@ -1,7 +1,8 @@
 """DeepSeek API client."""
 
 import os
-from openai import OpenAI
+import time
+from openai import APITimeoutError, APIConnectionError, InternalServerError, OpenAI, RateLimitError
 
 
 def get_client() -> OpenAI:
@@ -28,11 +29,17 @@ def chat(messages: list[dict[str, str]]) -> str:
         3. 从 response.choices[0].message.content 取出回复字符串并返回
     """
     client = get_client()
-    resp = client.chat.completions.create(model="deepseek-chat", messages=messages)
+    resp = client.chat.completions.create(model="deepseek-chat", messages=messages, timeout=30)
     return resp.choices[0].message.content
 
 
 def chat_with_tools(messages, tools):
     client = get_client()
-    resp = client.chat.completions.create(model="deepseek-chat", messages=messages, tools=tools)
-    return (resp.choices[0].message, resp.usage)
+    for attempt in range(3):
+        try:
+            resp = client.chat.completions.create(model="deepseek-chat", messages=messages, tools=tools, timeout=30)
+            return (resp.choices[0].message, resp.usage)
+        except (APITimeoutError, APIConnectionError, RateLimitError, InternalServerError) as e:
+            if attempt == 2:
+                raise e
+            time.sleep(2 ** attempt)

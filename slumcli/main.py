@@ -27,14 +27,23 @@ def main() -> None:
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}]
     while True:
-        user_input = input("You: ")
+        try:
+            user_input = input("You: ")
+        except (KeyboardInterrupt, EOFError) as e:
+            print(f"bye")
+            break
+
         if user_input == "exit":
             break
         
         trace = start_trace(user_input)
         messages.append({"role": "user", "content": user_input})
         trim_messages(messages)
-        reply = run_turn(messages, verbose, trace)
+        try:
+            reply = run_turn(messages, verbose, trace)
+        except Exception as e:
+            print(f"Error: {e}")
+            continue
         print(reply)
         finish_trace(trace)
         print_trace(trace)
