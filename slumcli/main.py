@@ -50,7 +50,6 @@ def main() -> None:
         except Exception as e:
             print(f"Error: {e}")
             continue
-        print(reply)
         finish_trace(trace)
         print_trace(trace)
 
@@ -98,7 +97,8 @@ def run_turn(messages, verbose, trace):
             names = [tc.function.name for tc in reply.tool_calls]
             vlog(verbose, f"[verbose] tool_calls: {names}")
             if turn == 10:
-                return "⚠️ 任务未在 10 轮内完成,已停止。"
+                print("⚠️ 任务未在 10 轮内完成,已停止。")
+                return
 
     vlog(verbose, f"[verbose] done, {turn} tool turn(s)")
     messages.append({"role": "assistant", "content": reply.content})
