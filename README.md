@@ -29,5 +29,5 @@ slumcli                # 或 slumcli -v
 
 ## 当前进度
 
-阶段 1（Tracing）进行中 — 待将 `tracing.py` 挂入 `main.py`。
+阶段 0～2 主体已完成；**下一步：阶段 3 最小 Eval harness**。
 完整进度看板见 **[docs/README.md](./docs/README.md)**（唯一事实来源）。
