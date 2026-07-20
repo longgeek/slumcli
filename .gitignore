@@ -8,3 +8,4 @@ slumcli.egg-info
 # 本地 AI 协作配置（不提交）
 CLAUDE.md
 .cursorrules
+AGENTS.md
