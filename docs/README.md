@@ -19,7 +19,7 @@
 
 根目录 `AI工程学习总手册.md`：作者个人原理笔记与开放问题清单（与 slumcli 阶段进度互补）。
 
-协作规则（AI 助手读，**本地不提交 git**）：`CLAUDE.md` / `.cursorrules`（内容一致）。
+协作规则（AI 助手读，**本地不提交 git**）：`CLAUDE.md` / `.cursorrules` / `AGENTS.md`（内容一致）。
 
 ---
 
@@ -67,7 +67,7 @@
 ```
 根目录
 ├── README.md               ← 项目门面 + quickstart
-├── CLAUDE.md / .cursorrules ← AI 协作规则（本地，.gitignore 不提交）
+├── CLAUDE.md / .cursorrules / AGENTS.md ← AI 协作规则（本地，.gitignore 不提交）
 ├── AI工程学习总手册.md       ← 作者个人学习历程（原理、心法、开放问题清单）
 └── docs/
     ├── README.md           ← 你在这里（总入口 + 唯一进度看板）

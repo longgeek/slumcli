@@ -25,7 +25,7 @@ slumcli                # 或 slumcli -v
 | [docs/05-modules.md](./docs/05-modules.md) | 模块手册（代码地图） |
 | [docs/06-development.md](./docs/06-development.md) | 开发协作：环境、Git、测试约定 |
 
-个人原理笔记：`AI工程学习总手册.md`（可纳入 git）。`CLAUDE.md` / `.cursorrules` 为本地协作规则，**不提交**。
+个人原理笔记：`AI工程学习总手册.md`（可纳入 git）。`CLAUDE.md` / `.cursorrules` / `AGENTS.md` 为本地协作规则，**不提交**。
 
 ## 当前进度
 
